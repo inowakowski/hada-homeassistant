@@ -1,0 +1,13 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "HADA",
+        "description": "Komputery z aplikacją Home Assistant Desktop App pojawią się tutaj same, gdy się połączą. Nie trzeba niczego wpisywać.\n\nW HADA, na stronie Połączenia, dodaj ten Home Assistant i wybierz dla jego encji integrację HADA."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "HADA jest już skonfigurowana. Komputery dodają się do niej same."
+    }
+  }
+}

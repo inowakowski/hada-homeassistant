@@ -1,0 +1,13 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "HADA",
+        "description": "Computers running the Home Assistant Desktop App show up here by themselves once they connect. There is nothing to enter.\n\nIn HADA, on the Connections page, add this Home Assistant and choose the HADA integration for its entities."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "HADA is already set up. Computers are added to it by themselves."
+    }
+  }
+}
