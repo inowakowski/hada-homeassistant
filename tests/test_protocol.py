@@ -5,13 +5,13 @@ from pytest_homeassistant_custom_component.typing import WebSocketGenerator
 
 from homeassistant.const import STATE_OFF, STATE_ON, STATE_UNAVAILABLE, STATE_UNKNOWN
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import device_registry as dr, entity_registry as er
+from homeassistant.helpers import entity_registry as er
 from homeassistant.setup import async_setup_component
 
 from custom_components.hada import async_remove_config_entry_device
 from custom_components.hada.const import DOMAIN
 
-from .conftest import CPU, DISPLAY, connect_message
+from .conftest import CPU, DISPLAY, connect_message, find_device
 
 
 async def test_connecting_makes_the_device_and_its_entities(
@@ -29,7 +29,7 @@ async def test_connecting_makes_the_device_and_its_entities(
     assert answer["result"]["ignored"] == []
     assert answer["result"]["integration_version"]
 
-    device = dr.async_get(hass).async_get_device(identifiers={(DOMAIN, "laptop")})
+    device = find_device(hass, entry, "laptop")
     assert device is not None
     assert device.name == "Laptop"
     assert device.manufacturer == "HADA"
@@ -124,18 +124,18 @@ async def test_unsubscribing_is_leaving_too(
 ) -> None:
     """A computer can say it leaves without closing the connection."""
     client = await hass_ws_client(hass)
-    connect_id = await client.send_json_auto_id(connect_message(CPU))
+    await client.send_json({"id": 1, **connect_message(CPU)})
     assert (await client.receive_json())["success"]
     await hass.async_block_till_done()
 
-    await client.send_json_auto_id({"type": "unsubscribe_events", "subscription": connect_id})
+    await client.send_json({"id": 2, "type": "unsubscribe_events", "subscription": 1})
     assert (await client.receive_json())["success"]
     await hass.async_block_till_done()
 
     assert hass.states.get("sensor.laptop_cpu_load").state == STATE_UNAVAILABLE
 
-    await client.send_json_auto_id(
-        {"type": "hada/update", "device_id": "laptop", "states": [{"id": "cpu_load", "state": 1}]}
+    await client.send_json(
+        {"id": 3, "type": "hada/update", "device_id": "laptop", "states": [{"id": "cpu_load", "state": 1}]}
     )
     assert (await client.receive_json())["error"]["code"] == "not_found"
 
@@ -277,7 +277,7 @@ async def test_malformed_messages_are_refused(
         assert not answer["success"], message
         assert answer["error"]["code"] == "invalid_format"
 
-    assert dr.async_get(hass).async_get_device(identifiers={(DOMAIN, "laptop")}) is None
+    assert find_device(hass, entry, "laptop") is None
 
 
 async def test_without_an_entry_the_commands_say_so(
@@ -302,7 +302,7 @@ async def test_a_device_can_be_deleted_while_it_is_away(
     await client.send_json_auto_id(connect_message(CPU))
     assert (await client.receive_json())["success"]
     await hass.async_block_till_done()
-    device = dr.async_get(hass).async_get_device(identifiers={(DOMAIN, "laptop")})
+    device = find_device(hass, entry, "laptop")
 
     assert not await async_remove_config_entry_device(hass, entry, device)
 

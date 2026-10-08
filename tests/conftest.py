@@ -6,6 +6,7 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import device_registry as dr
 
 from custom_components.hada.const import DOMAIN
 
@@ -23,6 +24,18 @@ async def entry(hass: HomeAssistant) -> MockConfigEntry:
     assert await hass.config_entries.async_setup(config_entry.entry_id)
     await hass.async_block_till_done()
     return config_entry
+
+
+def find_device(hass: HomeAssistant, entry: MockConfigEntry, device_id: str) -> dr.DeviceEntry | None:
+    """The device of the entry that stands for the computer of that id."""
+    return next(
+        (
+            device
+            for device in dr.async_entries_for_config_entry(dr.async_get(hass), entry.entry_id)
+            if (DOMAIN, device_id) in device.identifiers
+        ),
+        None,
+    )
 
 
 def connect_message(*entities: dict[str, Any], **device: Any) -> dict[str, Any]:
