@@ -22,6 +22,8 @@ from .const import (
     DOMAIN,
     KIND_BINARY_SENSOR,
     KIND_BUTTON,
+    KIND_EVENT,
+    KIND_NOTIFY,
     KIND_NUMBER,
     KIND_SENSOR,
     KIND_SWITCH,
@@ -43,6 +45,8 @@ KINDS: tuple[str, ...] = (
     KIND_BUTTON,
     KIND_SWITCH,
     KIND_NUMBER,
+    KIND_NOTIFY,
+    KIND_EVENT,
 )
 
 # What of a descriptor is kept between runs: what the entity is, not what it last reported.

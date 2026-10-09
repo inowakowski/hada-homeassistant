@@ -9,5 +9,25 @@
     "abort": {
       "single_instance_allowed": "HADA is already set up. Computers are added to it by themselves."
     }
+  },
+  "services": {
+    "notify": {
+      "name": "Send a notification to a computer",
+      "description": "Shows a notification on a computer running HADA, with all a phone's notification may carry: a picture, buttons, a tag to replace or take it back, an address to open.",
+      "fields": {
+        "message": {
+          "name": "Message",
+          "description": "The text. With a tag in the data, clear_notification takes the notification with that tag back."
+        },
+        "title": {
+          "name": "Title",
+          "description": "The heading; Home Assistant when left out."
+        },
+        "data": {
+          "name": "Data",
+          "description": "image, actions, tag, url, sticky, silent; as for notify.mobile_app actions."
+        }
+      }
+    }
   }
 }
