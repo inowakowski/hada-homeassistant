@@ -71,6 +71,10 @@ class HadaEntity(Entity):
         self._attr_icon = descriptor.get("icon")
 
     @callback
+    def async_happened(self) -> None:
+        """What the entity stands for happened on the computer. Only event entities make something of it."""
+
+    @callback
     def refresh(self) -> None:
         """Write the state, if the entity is part of Home Assistant by now."""
         if self.hass is None or not self.enabled:

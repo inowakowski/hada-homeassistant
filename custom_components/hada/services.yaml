@@ -1,0 +1,20 @@
+notify:
+  target:
+    entity:
+      integration: hada
+      domain: notify
+  fields:
+    message:
+      required: true
+      example: Someone is at the door.
+      selector:
+        text:
+          multiline: true
+    title:
+      example: Front door
+      selector:
+        text:
+    data:
+      example: '{"image": "/api/camera_proxy/camera.front_door", "tag": "door", "actions": [{"action": "open_door", "title": "Open"}]}'
+      selector:
+        object:
