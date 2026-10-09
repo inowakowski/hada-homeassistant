@@ -2,7 +2,7 @@
 
 The Home Assistant side of [HADA](https://github.com/inowakowski/home-assistant-desktop-app), the Home Assistant Desktop App: computers running HADA show up in Home Assistant as devices, with their own entities, without an MQTT broker.
 
-> **Early version.** Sensors and binary sensors work. Buttons, switches, numbers and notifications are specified in [PROTOCOL.md](PROTOCOL.md) and not built yet, and HADA itself cannot use this integration before its next version.
+> **Early version.** Sensors, binary sensors, buttons, switches and numbers work. Notifications and events are specified in [PROTOCOL.md](PROTOCOL.md) and not built yet, and HADA itself cannot use this integration before its next version.
 
 ## What it does
 

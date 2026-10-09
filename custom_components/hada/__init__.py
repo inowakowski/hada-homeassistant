@@ -16,7 +16,13 @@ from .const import DOMAIN
 from .device import HadaConfigEntry, HadaData
 from .websocket_api import async_register_commands
 
-PLATFORMS: list[Platform] = [Platform.BINARY_SENSOR, Platform.SENSOR]
+PLATFORMS: list[Platform] = [
+    Platform.BINARY_SENSOR,
+    Platform.BUTTON,
+    Platform.NUMBER,
+    Platform.SENSOR,
+    Platform.SWITCH,
+]
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -43,8 +49,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: HadaConfigEntry) -> boo
         # What is waiting to be saved would be lost with this object otherwise.
         await entry.runtime_data.async_save()
         for device in entry.runtime_data.devices.values():
-            device.connection = None
             device.entities.clear()
+            device.async_disconnected()
     return unloaded
 
 

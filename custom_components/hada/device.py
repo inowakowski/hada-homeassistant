@@ -2,20 +2,29 @@
 
 from __future__ import annotations
 
+import asyncio
 from collections.abc import Callable
 from dataclasses import dataclass, field
+import secrets
 from typing import TYPE_CHECKING, Any
 
+from homeassistant.components import websocket_api
+from homeassistant.components.websocket_api import ActiveConnection
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.storage import Store
 
+from . import const
 from .const import (
     DOMAIN,
     KIND_BINARY_SENSOR,
+    KIND_BUTTON,
+    KIND_NUMBER,
     KIND_SENSOR,
+    KIND_SWITCH,
     MANUFACTURER,
     SAVE_DELAY,
     STORAGE_KEY,
@@ -28,7 +37,13 @@ if TYPE_CHECKING:
 type HadaConfigEntry = ConfigEntry[HadaData]
 
 # The kinds of entity this version makes, by the platform that makes them.
-KINDS: tuple[str, ...] = (KIND_SENSOR, KIND_BINARY_SENSOR)
+KINDS: tuple[str, ...] = (
+    KIND_SENSOR,
+    KIND_BINARY_SENSOR,
+    KIND_BUTTON,
+    KIND_SWITCH,
+    KIND_NUMBER,
+)
 
 # What of a descriptor is kept between runs: what the entity is, not what it last reported.
 DESCRIPTOR_KEYS = (
@@ -74,11 +89,14 @@ class HadaDevice:
         self.states: dict[str, EntityState] = {}
         self.entities: dict[str, HadaEntity] = {}
 
-        # Identifies the connection the computer is connected through; None while it is away.
-        self.connection: object | None = None
+        # The connection the computer is connected through; None while it is away.
+        self.connection: ActiveConnection | None = None
 
-        # The id of the hada/connect command that connection was made with.
+        # The id of the hada/connect command that connection was made with; commands are sent under it.
         self.subscription: int | None = None
+
+        # The commands sent to the computer that it has not answered yet, by their ids.
+        self._pending: dict[str, asyncio.Future[dict[str, Any]]] = {}
 
     @property
     def connected(self) -> bool:
@@ -90,6 +108,65 @@ class HadaDevice:
         """Write the state of every entity, e.g. after the computer came or went."""
         for entity in self.entities.values():
             entity.refresh()
+
+    @callback
+    def async_connected(self, connection: ActiveConnection, subscription: int) -> None:
+        """The computer connected, perhaps in place of an earlier connection of its own."""
+        self._fail_pending()
+        self.connection = connection
+        self.subscription = subscription
+
+    @callback
+    def async_disconnected(self) -> None:
+        """The computer went away: nothing it was asked to do will be answered now."""
+        self.connection = None
+        self.subscription = None
+        self._fail_pending()
+        self.refresh_entities()
+
+    @callback
+    def _fail_pending(self) -> None:
+        for future in self._pending.values():
+            if not future.done():
+                future.set_result({"success": False, "error": f"{self.name} went away"})
+
+    async def async_send_command(self, command: str, entity_id: str, **fields: Any) -> None:
+        """Have the computer do something, and wait until it says it did.
+
+        Raises HomeAssistantError when it is not connected, does not answer in time, or refuses.
+        """
+        connection, subscription = self.connection, self.subscription
+        if connection is None or subscription is None:
+            raise HomeAssistantError(f"{self.name} is not connected")
+
+        command_id = secrets.token_hex(8)
+        future: asyncio.Future[dict[str, Any]] = asyncio.get_running_loop().create_future()
+        self._pending[command_id] = future
+        connection.send_message(
+            websocket_api.event_message(
+                subscription,
+                {"command_id": command_id, "command": command, "entity": entity_id, **fields},
+            )
+        )
+        try:
+            async with asyncio.timeout(const.COMMAND_TIMEOUT):
+                result = await future
+        except TimeoutError as err:
+            raise HomeAssistantError(f"{self.name} did not answer") from err
+        finally:
+            self._pending.pop(command_id, None)
+
+        if not result["success"]:
+            raise HomeAssistantError(result.get("error") or f"{self.name} could not do that")
+
+    @callback
+    def async_command_answered(self, command_id: str, success: bool, error: str | None) -> bool:
+        """The computer answered a command. Returns whether anyone was still waiting for that."""
+        future = self._pending.get(command_id)
+        if future is None or future.done():
+            return False
+        future.set_result({"success": success, "error": error})
+        return True
 
 
 class HadaData:

@@ -17,7 +17,7 @@ from homeassistant.util import dt as dt_util
 
 from .const import KIND_SENSOR
 from .device import HadaConfigEntry
-from .entity import HadaEntity
+from .entity import HadaEntity, enum_or_none
 
 
 async def async_setup_entry(
@@ -36,12 +36,8 @@ class HadaSensor(HadaEntity, SensorEntity):
 
     def _apply(self, descriptor: dict[str, Any]) -> None:
         super()._apply(descriptor)
-        self._attr_device_class = _enum_or_none(
-            SensorDeviceClass, descriptor.get("device_class")
-        )
-        self._attr_state_class = _enum_or_none(
-            SensorStateClass, descriptor.get("state_class")
-        )
+        self._attr_device_class = enum_or_none(SensorDeviceClass, descriptor.get("device_class"))
+        self._attr_state_class = enum_or_none(SensorStateClass, descriptor.get("state_class"))
         self._attr_native_unit_of_measurement = descriptor.get("unit")
 
     @property
@@ -64,12 +60,3 @@ class HadaSensor(HadaEntity, SensorEntity):
 
         return state
 
-
-def _enum_or_none[T](enum: type[T], value: str | None) -> T | None:
-    """The member of that name; None for none, and for a name Home Assistant does not know."""
-    if not value:
-        return None
-    try:
-        return enum(value.lower())  # type: ignore[call-arg]
-    except ValueError:
-        return None
