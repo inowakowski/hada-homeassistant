@@ -17,6 +17,8 @@ from homeassistant.core import HomeAssistant, callback
 from .const import (
     DOMAIN,
     ERR_UNSUPPORTED_PROTOCOL,
+    EVENT_HADA,
+    EVENT_NAME_QUICK_ACTION,
     MAX_ENTITIES,
     MIN_PROTOCOL_VERSION,
     PROTOCOL_VERSION,
@@ -94,6 +96,7 @@ def async_register_commands(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, handle_entities)
     websocket_api.async_register_command(hass, handle_update)
     websocket_api.async_register_command(hass, handle_command_result)
+    websocket_api.async_register_command(hass, handle_event)
 
 
 def _data(hass: HomeAssistant) -> HadaData | None:
@@ -270,4 +273,33 @@ def handle_command_result(
 
     # An answer nobody waits for any more, as after the 10 seconds, is not an error of the computer's.
     found[1].async_command_answered(msg["command_id"], msg["success"], msg.get("error"))
+    connection.send_result(msg["id"])
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "hada/event",
+        vol.Required("device_id"): ID,
+        vol.Required("name"): ID,
+        vol.Required("value"): vol.All(str, vol.Match(r"^[A-Za-z0-9_.-]{1,64}$")),
+    }
+)
+@callback
+def handle_event(
+    hass: HomeAssistant, connection: ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Something happened on a connected computer: a quick action was chosen, a button of a notification pressed."""
+    if (found := _connected_device(hass, connection, msg)) is None:
+        return
+
+    _, device = found
+    if msg["name"] == EVENT_NAME_QUICK_ACTION and (entity := device.entities.get(msg["value"])):
+        entity.async_happened()
+
+    # For automations: the event HADA fires itself when it is connected without the integration.
+    hass.bus.async_fire(
+        EVENT_HADA,
+        {"device_id": device.id, "name": msg["name"], "value": msg["value"]},
+        context=connection.context(msg),
+    )
     connection.send_result(msg["id"])

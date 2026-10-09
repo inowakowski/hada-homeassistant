@@ -9,5 +9,25 @@
     "abort": {
       "single_instance_allowed": "HADA jest już skonfigurowana. Komputery dodają się do niej same."
     }
+  },
+  "services": {
+    "notify": {
+      "name": "Wyślij powiadomienie na komputer",
+      "description": "Pokazuje powiadomienie na komputerze z HADA, ze wszystkim, co może mieć powiadomienie na telefonie: obrazkiem, przyciskami, tagiem do podmiany lub wycofania, adresem do otwarcia.",
+      "fields": {
+        "message": {
+          "name": "Treść",
+          "description": "Tekst. Z tagiem w danych clear_notification wycofuje powiadomienie o tym tagu."
+        },
+        "title": {
+          "name": "Tytuł",
+          "description": "Nagłówek; gdy pusty, Home Assistant."
+        },
+        "data": {
+          "name": "Dane",
+          "description": "image, actions, tag, url, sticky, silent; jak w akcjach notify.mobile_app."
+        }
+      }
+    }
   }
 }

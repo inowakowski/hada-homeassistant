@@ -2,7 +2,7 @@
 
 How [HADA](https://github.com/inowakowski/home-assistant-desktop-app), the desktop app, and this integration talk to each other. This file is the specification both sides are written against.
 
-**Protocol version: 1.** Parts marked *(planned)* are specified here but not implemented by the integration yet; see [Status](#status).
+**Protocol version: 1.** [Status](#status) says which version of the integration each part came with.
 
 ## Transport
 
@@ -114,8 +114,8 @@ Fields the integration does not know are ignored, so newer versions of HADA may 
 | `button` | `button` | None |
 | `switch` | `switch` | `true`, `false`, or `null` |
 | `number` | `number` | A number, or `null` |
-| `notify` *(planned)* | `notify`, and the action `hada.notify` | None |
-| `event` *(planned)* | `event` | None; see [Events](#events-from-the-computer) |
+| `notify` | `notify`, which the actions `notify.send_message` and `hada.notify` take | None |
+| `event` | `event` | None; see [Events](#events-from-the-computer) |
 
 ### Changing the entities
 
@@ -159,7 +159,7 @@ When an entity is used in Home Assistant, the integration sends a command on the
 |---|---|---|
 | `press` | `button` | |
 | `set` | `switch`, `number` | `value`: `true` / `false`, or the number |
-| `notify` *(planned)* | `notify` | `message`, and optionally `title` and `data`, shaped as Home Assistant's `notify.mobile_app_*` actions shape them |
+| `notify` | `notify` | `message`, and optionally `title` and `data`, shaped as Home Assistant's `notify.mobile_app_*` actions shape them |
 
 HADA answers each command:
 
@@ -174,11 +174,11 @@ or with `"success": false, "error": "…"`. Without an answer within 10 seconds,
 
 The state of a switch or a number is never assumed: it changes in Home Assistant when HADA reports it with `hada/update`.
 
-A picture in a notification that is a path at this Home Assistant is signed by the integration before the command is sent, so the computer can fetch it without an access token.
+`notify.send_message` sends `message` and `title`. The action `hada.notify`, aimed at the same entity, also takes `data`: `image`, `actions`, `tag`, `url`, `sticky`, `silent`, as HADA's documentation describes them.
+
+A picture in a notification that is a path at this Home Assistant, other than one under `/local/`, is signed by the integration before the command is sent: `data.image` then carries `authSig`, which makes it good for a minute without an access token. The computer fetches it from the Home Assistant it is connected to.
 
 ## Events from the computer
-
-*(planned)*
 
 ```json
 { "id": 15, "type": "hada/event", "device_id": "laptop", "name": "quick_action", "value": "toggle_lamp" }
@@ -186,8 +186,10 @@ A picture in a notification that is a path at this Home Assistant is signed by t
 
 | `name` | `value` | What the integration does |
 |---|---|---|
-| `quick_action` | The id of the `event` entity | Triggers that entity, and fires `hada_event` |
+| `quick_action` | The id of the `event` entity | Triggers that entity with the event type `pressed`, and fires `hada_event` |
 | `notification_action` | The `action` of the pressed button | Fires `hada_event` |
+
+`name` is lowercase letters, digits and `_`; `value` is 1 to 64 letters, digits, `_`, `-` and `.`. A name the integration does not know fires `hada_event` all the same.
 
 `hada_event` has the data `device_id`, `name` and `value`, as the event HADA fires without the integration has.
 
@@ -211,4 +213,4 @@ No command needs an administrator's token.
 | `sensor`, `binary_sensor` | 0.1.0 |
 | Availability, removing entities that are gone, owner of a device | 0.1.0 |
 | `button`, `switch`, `number`, the commands `press` and `set`, `hada/command_result` | 0.2.0 |
-| `notify`, `event`, `hada/event` | planned |
+| `notify`, the command `notify`, the action `hada.notify`; `event`, `hada/event` | 0.3.0 |
