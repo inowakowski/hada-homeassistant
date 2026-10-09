@@ -15,6 +15,19 @@ from .device import EntityState, HadaDevice, unique_id
 _LOGGER = logging.getLogger(__name__)
 
 
+def enum_or_none[T](enum: type[T], value: str | None) -> T | None:
+    """The member of that name; None for none, and for a name Home Assistant does not know.
+
+    A class Home Assistant does not know costs the class, not the entity.
+    """
+    if not value:
+        return None
+    try:
+        return enum(value.lower())  # type: ignore[call-arg]
+    except ValueError:
+        return None
+
+
 class HadaEntity(Entity):
     """An entity a computer described, showing what the computer last reported for it."""
 

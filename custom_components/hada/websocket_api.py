@@ -93,6 +93,7 @@ def async_register_commands(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, handle_connect)
     websocket_api.async_register_command(hass, handle_entities)
     websocket_api.async_register_command(hass, handle_update)
+    websocket_api.async_register_command(hass, handle_command_result)
 
 
 def _data(hass: HomeAssistant) -> HadaData | None:
@@ -175,7 +176,7 @@ def handle_connect(
     data.async_update_device_registry(device)
 
     # Connected before anything is written, so that the states written are those of a device that is there.
-    device.connection = connection
+    device.async_connected(connection, msg["id"])
     ignored = data.async_set_entities(device, msg["entities"])
 
     @callback
@@ -183,10 +184,8 @@ def handle_connect(
         """The connection closed, or the computer unsubscribed."""
         # Unless the computer has connected anew since, through this or another connection.
         if device.connection is connection and device.subscription == msg["id"]:
-            device.connection = None
-            device.refresh_entities()
+            device.async_disconnected()
 
-    device.subscription = msg["id"]
     connection.subscriptions[msg["id"]] = disconnect
     connection.send_result(
         msg["id"],
@@ -249,4 +248,26 @@ def handle_update(
         if (entity := device.entities.get(update["id"])) is not None:
             entity.refresh()
 
+    connection.send_result(msg["id"])
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "hada/command_result",
+        vol.Required("device_id"): ID,
+        vol.Required("command_id"): TEXT,
+        vol.Required("success"): bool,
+        vol.Optional("error"): OPTIONAL_TEXT,
+    }
+)
+@callback
+def handle_command_result(
+    hass: HomeAssistant, connection: ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """A connected computer says how a command it was sent went."""
+    if (found := _connected_device(hass, connection, msg)) is None:
+        return
+
+    # An answer nobody waits for any more, as after the 10 seconds, is not an error of the computer's.
+    found[1].async_command_answered(msg["command_id"], msg["success"], msg.get("error"))
     connection.send_result(msg["id"])

@@ -111,9 +111,9 @@ Fields the integration does not know are ignored, so newer versions of HADA may 
 |---|---|---|
 | `sensor` | `sensor` | A number, a text, or `null` for unknown. With `device_class: timestamp`, a time in ISO 8601 |
 | `binary_sensor` | `binary_sensor` | `true`, `false`, or `null` |
-| `button` *(planned)* | `button` | None |
-| `switch` *(planned)* | `switch` | `true`, `false`, or `null` |
-| `number` *(planned)* | `number` | A number, or `null` |
+| `button` | `button` | None |
+| `switch` | `switch` | `true`, `false`, or `null` |
+| `number` | `number` | A number, or `null` |
 | `notify` *(planned)* | `notify`, and the action `hada.notify` | None |
 | `event` *(planned)* | `event` | None; see [Events](#events-from-the-computer) |
 
@@ -148,8 +148,6 @@ Each item names an entity and carries what changed about it: `state`, `attribute
 
 ## Commands for the computer
 
-*(planned)*
-
 When an entity is used in Home Assistant, the integration sends a command on the `hada/connect` subscription:
 
 ```json
@@ -161,7 +159,7 @@ When an entity is used in Home Assistant, the integration sends a command on the
 |---|---|---|
 | `press` | `button` | |
 | `set` | `switch`, `number` | `value`: `true` / `false`, or the number |
-| `notify` | `notify` | `message`, and optionally `title` and `data`, shaped as Home Assistant's `notify.mobile_app_*` actions shape them |
+| `notify` *(planned)* | `notify` | `message`, and optionally `title` and `data`, shaped as Home Assistant's `notify.mobile_app_*` actions shape them |
 
 HADA answers each command:
 
@@ -170,7 +168,9 @@ HADA answers each command:
   "command_id": "a1b2c3", "success": true }
 ```
 
-or with `"success": false, "error": "…"`. Without an answer within 10 seconds, the action in Home Assistant fails. A command HADA does not know is answered with `success: false`.
+or with `"success": false, "error": "…"`. Without an answer within 10 seconds, the action in Home Assistant fails; so it does when the computer goes away before answering. A command HADA does not know is answered with `success: false`.
+
+`success` says that the computer took the command, not that what was wanted has happened: that shows in the states it reports.
 
 The state of a switch or a number is never assumed: it changes in Home Assistant when HADA reports it with `hada/update`.
 
@@ -210,5 +210,5 @@ No command needs an administrator's token.
 | `hada/connect`, `hada/entities`, `hada/update` | 0.1.0 |
 | `sensor`, `binary_sensor` | 0.1.0 |
 | Availability, removing entities that are gone, owner of a device | 0.1.0 |
-| `button`, `switch`, `number`, commands and their results | planned |
+| `button`, `switch`, `number`, the commands `press` and `set`, `hada/command_result` | 0.2.0 |
 | `notify`, `event`, `hada/event` | planned |

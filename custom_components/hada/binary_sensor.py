@@ -13,7 +13,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import KIND_BINARY_SENSOR
 from .device import HadaConfigEntry
-from .entity import HadaEntity
+from .entity import HadaEntity, enum_or_none
 
 
 async def async_setup_entry(
@@ -32,14 +32,9 @@ class HadaBinarySensor(HadaEntity, BinarySensorEntity):
 
     def _apply(self, descriptor: dict[str, Any]) -> None:
         super()._apply(descriptor)
-        device_class = descriptor.get("device_class")
-        try:
-            self._attr_device_class = (
-                BinarySensorDeviceClass(device_class.lower()) if device_class else None
-            )
-        except ValueError:
-            # A class Home Assistant does not know costs the class, not the entity.
-            self._attr_device_class = None
+        self._attr_device_class = enum_or_none(
+            BinarySensorDeviceClass, descriptor.get("device_class")
+        )
 
     @property
     def is_on(self) -> bool | None:
