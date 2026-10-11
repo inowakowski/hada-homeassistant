@@ -1,5 +1,8 @@
 """What a computer running HADA can do over the WebSocket API, as PROTOCOL.md describes it."""
 
+from unittest.mock import patch
+
+import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 from pytest_homeassistant_custom_component.typing import WebSocketGenerator
 
@@ -258,6 +261,52 @@ async def test_a_device_belongs_to_the_user_who_connected_it_first(
     await hass.async_block_till_done()
 
     assert hass.states.get("sensor.tablet_cpu_load").state == "99"
+
+
+async def test_a_computer_that_comes_back_unchanged_is_not_written_down_again(
+    hass: HomeAssistant, entry: MockConfigEntry, hass_ws_client: WebSocketGenerator
+) -> None:
+    """Computers reconnect all day; the devices are saved only when something about them changed."""
+    with patch.object(entry.runtime_data._store, "async_delay_save") as save:
+        client = await hass_ws_client(hass)
+        await client.send_json_auto_id(connect_message(CPU, DISPLAY))
+        assert (await client.receive_json())["success"]
+        assert save.call_count == 1
+
+        # The same computer with the same entities; what they report is not something that is kept.
+        again = await hass_ws_client(hass)
+        await again.send_json_auto_id(connect_message({**CPU, "state": 50}, DISPLAY))
+        assert (await again.receive_json())["success"]
+        assert save.call_count == 1
+
+        # An entity fewer is something to write down.
+        await again.send_json_auto_id(
+            {"type": "hada/entities", "device_id": "laptop", "entities": [CPU]}
+        )
+        assert (await again.receive_json())["success"]
+        assert save.call_count == 2
+
+
+async def test_there_is_room_for_only_so_many_computers(
+    hass: HomeAssistant,
+    entry: MockConfigEntry,
+    hass_ws_client: WebSocketGenerator,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A new computer is refused once there are as many as are allowed; a known one still connects."""
+    monkeypatch.setattr("custom_components.hada.const.MAX_DEVICES", 1)
+    client = await hass_ws_client(hass)
+    await client.send_json_auto_id(connect_message(CPU))
+    assert (await client.receive_json())["success"]
+
+    await client.send_json_auto_id(connect_message(CPU, id="tablet", name="Tablet"))
+    answer = await client.receive_json()
+    assert not answer["success"]
+    assert answer["error"]["code"] == "too_many_devices"
+    assert find_device(hass, entry, "tablet") is None
+
+    await client.send_json_auto_id(connect_message(CPU))
+    assert (await client.receive_json())["success"]
 
 
 async def test_malformed_messages_are_refused(

@@ -70,6 +70,7 @@ A second `hada/connect` for the same device, from this or another connection, ta
 | `not_found` | The integration is installed, but not set up (no *HADA* entry under **Devices & services**) |
 | `unsupported_protocol` | HADA's `protocol` is older than the oldest the integration still speaks |
 | `unauthorized` | The device id belongs to another Home Assistant user, see [Who may speak for a device](#who-may-speak-for-a-device) |
+| `too_many_devices` | The device is new, and there are 250 computers already; one that is known connects all the same |
 | `invalid_format` | The message does not have the shape described here |
 
 ## Entities

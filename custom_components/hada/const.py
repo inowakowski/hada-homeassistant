@@ -10,6 +10,9 @@ MIN_PROTOCOL_VERSION: Final = 1
 
 MAX_ENTITIES: Final = 500
 
+# Any user of Home Assistant may connect a computer; this keeps one of them from filling it with devices.
+MAX_DEVICES: Final = 250
+
 STORAGE_KEY: Final = DOMAIN
 STORAGE_VERSION: Final = 1
 SAVE_DELAY: Final = 10
@@ -45,3 +48,4 @@ SIGNED_PATH_SECONDS: Final = 60
 COMMAND_TIMEOUT: Final = 10
 
 ERR_UNSUPPORTED_PROTOCOL: Final = "unsupported_protocol"
+ERR_TOO_MANY_DEVICES: Final = "too_many_devices"
