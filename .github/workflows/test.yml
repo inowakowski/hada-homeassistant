@@ -18,11 +18,12 @@ jobs:
             requirements: -r requirements_test.txt
           # The oldest Home Assistant hacs.json says the integration works with; that version of the test
           # package is the one made for Home Assistant 2024.8.0. With the versions of everything else that
-          # Home Assistant allowed then, and a josepy from before it dropped what that Home Assistant uses.
+          # Home Assistant allowed then, a josepy from before it dropped what that Home Assistant uses, and a
+          # pycares from before it kept a thread running that the test package of the day takes for a leak.
           - name: the oldest Home Assistant supported (2024.8.0)
             python: "3.12"
             requirements: >-
-              pytest-homeassistant-custom-component==0.13.152 "josepy<2"
+              pytest-homeassistant-custom-component==0.13.152 "josepy<2" "pycares<4.9"
               -c https://raw.githubusercontent.com/home-assistant/core/2024.8.0/homeassistant/package_constraints.txt
     steps:
       - uses: actions/checkout@v4
