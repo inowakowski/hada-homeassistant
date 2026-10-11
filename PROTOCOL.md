@@ -101,6 +101,7 @@ HADA is the source of truth about which entities a device has. The list in `hada
 | `icon` | Optional, a Material Design icon such as `mdi:laptop` |
 | `device_class`, `unit`, `state_class` | Optional, as Home Assistant understands them for that kind of entity. A `device_class` it does not know is dropped, not refused |
 | `min`, `max`, `step` | For `number` |
+| `features` | For `media_player`: what it can be told, a list of the `action`s under [Commands](#commands-for-the-computer). One the integration does not know is left out |
 | `enabled_by_default` | Optional, default `true`. `false` for entities that should start disabled in Home Assistant |
 | `state` | Optional: the current state, see below |
 | `attributes` | Optional: extra state attributes |
@@ -117,6 +118,7 @@ Fields the integration does not know are ignored, so newer versions of HADA may 
 | `number` | `number` | A number, or `null` |
 | `notify` | `notify`, which the actions `notify.send_message` and `hada.notify` take | None |
 | `event` | `event` | None; see [Events](#events-from-the-computer) |
+| `media_player` | `media_player` | `playing`, `paused`, `stopped` or `idle`; the last two are both *idle* in Home Assistant. Its `attributes` are `title`, `artist`, `album`, `app`, `volume` (0 to 100) and `muted`, each optional, and are shown as the media player's own, not as extra attributes |
 
 ### Changing the entities
 
@@ -161,6 +163,7 @@ When an entity is used in Home Assistant, the integration sends a command on the
 | `press` | `button` | |
 | `set` | `switch`, `number` | `value`: `true` / `false`, or the number |
 | `notify` | `notify` | `message`, and optionally `title` and `data`, shaped as Home Assistant's `notify.mobile_app_*` actions shape them |
+| `media` | `media_player` | `action`: `play`, `pause`, `play_pause`, `next`, `previous`, `stop`, `volume_set` with `value` from 0 to 100, or `volume_mute` with `value` `true` / `false` |
 
 HADA answers each command:
 

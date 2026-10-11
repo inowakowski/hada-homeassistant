@@ -47,6 +47,7 @@ ENTITY_SCHEMA = vol.Schema(
         vol.Optional("min"): OPTIONAL_NUMBER,
         vol.Optional("max"): OPTIONAL_NUMBER,
         vol.Optional("step"): OPTIONAL_NUMBER,
+        vol.Optional("features"): vol.Any(None, vol.All([TEXT], vol.Length(max=32))),
         vol.Optional("enabled_by_default", default=True): bool,
         vol.Optional("state"): STATE,
         vol.Optional("attributes"): vol.Any(None, dict),

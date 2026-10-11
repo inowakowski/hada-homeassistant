@@ -24,6 +24,7 @@ from .const import (
     KIND_BINARY_SENSOR,
     KIND_BUTTON,
     KIND_EVENT,
+    KIND_MEDIA_PLAYER,
     KIND_NOTIFY,
     KIND_NUMBER,
     KIND_SENSOR,
@@ -48,6 +49,7 @@ KINDS: tuple[str, ...] = (
     KIND_NUMBER,
     KIND_NOTIFY,
     KIND_EVENT,
+    KIND_MEDIA_PLAYER,
 )
 
 # What of a descriptor is kept between runs: what the entity is, not what it last reported.
@@ -62,6 +64,7 @@ DESCRIPTOR_KEYS = (
     "min",
     "max",
     "step",
+    "features",
     "enabled_by_default",
 )
 
