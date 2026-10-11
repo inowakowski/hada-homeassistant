@@ -2,7 +2,7 @@
 
 The Home Assistant side of [HADA](https://github.com/inowakowski/home-assistant-desktop-app), the Home Assistant Desktop App: computers running HADA show up in Home Assistant as devices, with their own entities, without an MQTT broker.
 
-> **Early version.** Everything in [PROTOCOL.md](PROTOCOL.md) is built, but HADA itself cannot use this integration before its next version.
+It needs HADA 1.4.0 or newer on the computer, and Home Assistant 2024.8 or newer. HADA can also work without this integration, through MQTT or with Home Assistant alone; [Which connection to choose](https://github.com/inowakowski/home-assistant-desktop-app/blob/main/docs/home-assistant/choosing.md) compares the three.
 
 ## What it does
 
@@ -29,7 +29,9 @@ Without HACS: copy `custom_components/hada` into the `custom_components` folder 
 
 ## Connecting a computer
 
-In HADA, on the **Connections** page, add this Home Assistant under **Home Assistant (WebSocket)** and choose the HADA integration for its entities. The computer then appears under **Settings → Devices & services → HADA**.
+In HADA, on the **Connections** page, add this Home Assistant under **Home Assistant (WebSocket)**, with its address and a long-lived access token, and set **Entities** to **Through the HADA integration**. The computer then appears under **Settings → Devices & services → HADA**.
+
+While the integration is missing or not added yet, the card of that Home Assistant on HADA's **Overview** page says so, and HADA tries again every minute.
 
 To remove a computer, delete its device there while the computer is not connected.
 
