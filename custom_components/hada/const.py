@@ -26,10 +26,12 @@ KIND_SWITCH: Final = "switch"
 KIND_NUMBER: Final = "number"
 KIND_NOTIFY: Final = "notify"
 KIND_EVENT: Final = "event"
+KIND_MEDIA_PLAYER: Final = "media_player"
 
 COMMAND_PRESS: Final = "press"
 COMMAND_SET: Final = "set"
 COMMAND_NOTIFY: Final = "notify"
+COMMAND_MEDIA: Final = "media"
 
 # What happens on a computer is fired as this event, with device_id, name and value; HADA fires the
 # same event itself when it is connected without the integration.

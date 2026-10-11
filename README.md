@@ -11,6 +11,7 @@ It needs HADA 1.4.0 or newer on the computer, and Home Assistant 2024.8 or newer
 - An entity the computer no longer has is removed.
 - When a computer goes away, for whatever reason, its entities are *unavailable* at once.
 - Buttons, switches and numbers are real ones: lock the screen, set the volume, mute, from a dashboard or an automation.
+- The computer as a media player: what is playing, play, pause, next and previous, volume and mute in one entity.
 - Notifications with all a phone's may carry, through the action `hada.notify`: a picture (a camera's too), buttons, a tag to replace or take one back, an address to open.
 - Quick actions chosen on the computer are `event` entities, and fire the event `hada_event`.
 
