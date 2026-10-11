@@ -14,8 +14,10 @@ from homeassistant.components.websocket_api import ActiveConnection
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant, callback
 
+from . import const
 from .const import (
     DOMAIN,
+    ERR_TOO_MANY_DEVICES,
     ERR_UNSUPPORTED_PROTOCOL,
     EVENT_HADA,
     EVENT_NAME_QUICK_ACTION,
@@ -170,6 +172,14 @@ def handle_connect(
         return
 
     if device is None:
+        if len(data.devices) >= const.MAX_DEVICES:
+            connection.send_error(
+                msg["id"],
+                ERR_TOO_MANY_DEVICES,
+                f"There are {const.MAX_DEVICES} computers already; delete one that is no longer used",
+            )
+            return
+
         device = data.devices[device_id] = HadaDevice(
             device_id, info["name"], connection.user.id
         )

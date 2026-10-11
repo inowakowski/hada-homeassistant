@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Callable
 from dataclasses import dataclass, field
+import json
 import secrets
 from typing import TYPE_CHECKING, Any
 
@@ -190,6 +191,9 @@ class HadaData:
         self.factories: dict[str, Callable[[HadaDevice, dict[str, Any]], HadaEntity]] = {}
         self._store: Store[dict[str, Any]] = Store(hass, STORAGE_VERSION, STORAGE_KEY)
 
+        # What was last written down, or is about to be, to tell whether there is anything new to write.
+        self._saved: str | None = None
+
     async def async_load(self) -> None:
         """Read the devices seen before, so their entities exist while they are away."""
         stored = await self._store.async_load() or {}
@@ -202,14 +206,29 @@ class HadaData:
             }
             self.devices[device_id] = device
 
+        self._saved = self._fingerprint()
+
     @callback
     def async_schedule_save(self) -> None:
-        """Save the devices soon; several changes in a row are saved once."""
+        """Save the devices soon, if anything about them changed; several changes in a row are saved once.
+
+        Computers come and go all day, each time with the entities they had before. Nothing is
+        written for that: a Home Assistant on a memory card is spared the wear.
+        """
+        fingerprint = self._fingerprint()
+        if fingerprint == self._saved:
+            return
+        self._saved = fingerprint
         self._store.async_delay_save(self._data_to_save, SAVE_DELAY)
 
     async def async_save(self) -> None:
         """Save the devices now, e.g. before the entry is unloaded and this object let go."""
+        self._saved = self._fingerprint()
         await self._store.async_save(self._data_to_save())
+
+    def _fingerprint(self) -> str:
+        """What would be saved, as a text to compare with what was."""
+        return json.dumps(self._data_to_save(), sort_keys=True, default=str)
 
     @callback
     def _data_to_save(self) -> dict[str, Any]:
