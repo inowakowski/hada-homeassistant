@@ -28,6 +28,14 @@ With [HACS](https://hacs.xyz):
 
 Without HACS: copy `custom_components/hada` into the `custom_components` folder of your Home Assistant configuration, restart, and continue with step 4.
 
+## Updating
+
+HACS tells you when a new version is out: **HADA** then shows under **Settings → System → Updates** in Home Assistant, and in HACS itself, with what changed. Download it there and restart Home Assistant.
+
+- HACS looks for new versions of a repository added by hand when Home Assistant starts, and every two days after that. To look right now, open **HADA** in HACS and choose **Update information** from the menu.
+- An installation made from the `main` branch, before there were versions, follows that branch instead. Choose **Redownload** once and pick a version, and HACS follows the versions from then on.
+- HADA on the computer also says so, on its Overview page, when the integration here is older than it needs.
+
 ## Connecting a computer
 
 In HADA, on the **Connections** page, add this Home Assistant under **Home Assistant (WebSocket)**, with its address and a long-lived access token, and set **Entities** to **Through the HADA integration**. The computer then appears under **Settings → Devices & services → HADA**.
