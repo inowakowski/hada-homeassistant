@@ -19,14 +19,24 @@ It needs no broker and opens no port on the computer: HADA connects to Home Assi
 
 ## Installing
 
-With [HACS](https://hacs.xyz):
+With [HACS](https://hacs.xyz), in two clicks:
 
-1. In HACS, open the menu and choose **Custom repositories**.
-2. Add `https://github.com/inowakowski/hada-homeassistant` with the type **Integration**.
-3. Find **HADA** in HACS, download it, and restart Home Assistant.
-4. Go to **Settings → Devices & services → Add integration**, choose **HADA** and confirm. There is nothing to enter.
+1. Open this repository in the HACS of your Home Assistant, choose **Download**, and restart Home Assistant.
 
-Without HACS: copy `custom_components/hada` into the `custom_components` folder of your Home Assistant configuration, restart, and continue with step 4.
+   [![Open your Home Assistant instance and open this repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=inowakowski&repository=hada-homeassistant&category=integration)
+
+2. Add the integration and confirm. There is nothing to enter.
+
+   [![Open your Home Assistant instance and start setting up the HADA integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=hada)
+
+The buttons ask for the address of your Home Assistant the first time they are used, and remember it in the browser.
+
+By hand, the same two steps:
+
+1. In HACS, open the menu, choose **Custom repositories**, and add `https://github.com/inowakowski/hada-homeassistant` with the type **Integration**. Find **HADA** in HACS, download it, and restart Home Assistant.
+2. Go to **Settings → Devices & services → Add integration**, choose **HADA** and confirm.
+
+Without HACS: copy `custom_components/hada` into the `custom_components` folder of your Home Assistant configuration, restart, and continue with step 2.
 
 ## Updating
 
