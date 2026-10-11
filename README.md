@@ -2,7 +2,7 @@
 
 The Home Assistant side of [HADA](https://github.com/inowakowski/home-assistant-desktop-app), the Home Assistant Desktop App: computers running HADA show up in Home Assistant as devices, with their own entities, without an MQTT broker.
 
-It needs HADA 1.4.0 or newer on the computer, and Home Assistant 2024.8 or newer. HADA can also work without this integration, through MQTT or with Home Assistant alone; [Which connection to choose](https://github.com/inowakowski/home-assistant-desktop-app/blob/main/docs/home-assistant/choosing.md) compares the three.
+It needs HADA 1.4.0 or newer on the computer, and Home Assistant 2024.8 or newer; the media player needs HADA 1.5.0. HADA can also work without this integration, through MQTT or with Home Assistant alone; [Which connection to choose](https://github.com/inowakowski/home-assistant-desktop-app/blob/main/docs/home-assistant/choosing.md) compares the three.
 
 ## What it does
 
