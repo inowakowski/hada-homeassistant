@@ -85,7 +85,17 @@ triggers:
       value: open_door
 ```
 
-Name the computer, as `device_id` does here, in every automation that starts from `hada_event`. Any user of Home Assistant may connect a computer of their own, and its events carry the same names and values; without `device_id`, theirs would open the door too. A computer can fire events only under its own Device ID.
+Name the computer, as `device_id` does here, in every automation that starts from `hada_event`. Any user of Home Assistant may connect a computer of their own, and its events carry the same names and values; without `device_id`, theirs would open the door too. Through the integration a computer fires events only under its own Device ID.
+
+For an action that matters, such as opening a door, also check *who* fired the event. Home Assistant lets the companion app of any of its users fire any event with any data, `hada_event` and `device_id: laptop` included; what it cannot make up is the user the event comes from, which is the user whose token the computer connected with:
+
+```yaml
+conditions:
+  - condition: template
+    value_template: "{{ trigger.event.context.user_id == '0123456789abcdef0123456789abcdef' }}"
+```
+
+The id is that user's, shown under **Settings → People → Users** with advanced mode on.
 
 What `data` may carry is described in [HADA's documentation](https://github.com/inowakowski/home-assistant-desktop-app/blob/main/docs/features/notifications.md).
 
