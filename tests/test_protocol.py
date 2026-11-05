@@ -309,6 +309,87 @@ async def test_there_is_room_for_only_so_many_computers(
     assert (await client.receive_json())["success"]
 
 
+async def test_a_user_who_is_not_an_administrator_has_room_for_only_so_many_computers(
+    hass: HomeAssistant,
+    entry: MockConfigEntry,
+    hass_ws_client: WebSocketGenerator,
+    hass_read_only_access_token: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """One user's token cannot fill Home Assistant with computers, or take every likely device id; an administrator's can add more."""
+    monkeypatch.setattr("custom_components.hada.const.MAX_DEVICES_PER_USER", 1)
+    user = await hass_ws_client(hass, hass_read_only_access_token)
+    await user.send_json_auto_id(connect_message(CPU, id="tablet", name="Tablet"))
+    assert (await user.receive_json())["success"]
+
+    await user.send_json_auto_id(connect_message(CPU, id="phone", name="Phone"))
+    answer = await user.receive_json()
+    assert not answer["success"]
+    assert answer["error"]["code"] == "too_many_devices"
+    assert find_device(hass, entry, "phone") is None
+
+    # Its own computer still connects.
+    await user.send_json_auto_id(connect_message(CPU, id="tablet", name="Tablet"))
+    assert (await user.receive_json())["success"]
+
+    administrator = await hass_ws_client(hass)
+    for device_id in ("laptop", "desktop"):
+        await administrator.send_json_auto_id(connect_message(CPU, id=device_id, name=device_id.title()))
+        assert (await administrator.receive_json())["success"]
+
+
+async def test_attributes_home_assistant_sets_itself_are_not_the_computers(
+    hass: HomeAssistant, entry: MockConfigEntry, hass_ws_client: WebSocketGenerator
+) -> None:
+    """A computer cannot give its entity a picture from an address of its choice, or another name."""
+    client = await hass_ws_client(hass)
+    disguised = {"entity_picture": "https://example.com/picture.png", "friendly_name": "Front door", "cores": 8}
+    await client.send_json_auto_id(connect_message({**CPU, "attributes": disguised}))
+    assert (await client.receive_json())["success"]
+    await hass.async_block_till_done()
+
+    cpu = hass.states.get("sensor.laptop_cpu_load")
+    assert "entity_picture" not in cpu.attributes
+    assert cpu.attributes["friendly_name"] == "Laptop CPU load"
+    assert cpu.attributes["cores"] == 8
+
+    await client.send_json_auto_id(
+        {"type": "hada/update", "device_id": "laptop", "states": [{"id": "cpu_load", "attributes": disguised}]}
+    )
+    assert (await client.receive_json())["success"]
+    await hass.async_block_till_done()
+
+    assert "entity_picture" not in hass.states.get("sensor.laptop_cpu_load").attributes
+
+
+async def test_attributes_too_large_are_left_out_and_the_state_kept(
+    hass: HomeAssistant,
+    entry: MockConfigEntry,
+    hass_ws_client: WebSocketGenerator,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """More than Home Assistant's recorder keeps is not kept here either."""
+    monkeypatch.setattr("custom_components.hada.const.MAX_ATTRIBUTES_BYTES", 100)
+    client = await hass_ws_client(hass)
+    await client.send_json_auto_id(connect_message(CPU))
+    assert (await client.receive_json())["success"]
+
+    await client.send_json_auto_id(
+        {
+            "type": "hada/update",
+            "device_id": "laptop",
+            "states": [{"id": "cpu_load", "state": 40, "attributes": {"cores": 8, "list": "x" * 200}}],
+        }
+    )
+    assert (await client.receive_json())["success"]
+    await hass.async_block_till_done()
+
+    cpu = hass.states.get("sensor.laptop_cpu_load")
+    assert cpu.state == "40"
+    assert "list" not in cpu.attributes
+    assert "cores" not in cpu.attributes
+
+
 async def test_malformed_messages_are_refused(
     hass: HomeAssistant, entry: MockConfigEntry, hass_ws_client: WebSocketGenerator
 ) -> None:

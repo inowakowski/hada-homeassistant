@@ -10,8 +10,15 @@ MIN_PROTOCOL_VERSION: Final = 1
 
 MAX_ENTITIES: Final = 500
 
-# Any user of Home Assistant may connect a computer; this keeps one of them from filling it with devices.
+# Any user of Home Assistant may connect a computer. This keeps Home Assistant from filling up with devices,
 MAX_DEVICES: Final = 250
+
+# and this keeps one user who is not an administrator from taking all the room, or every likely device id.
+MAX_DEVICES_PER_USER: Final = 20
+
+# The most a computer may report as one entity's attributes, as JSON: what Home Assistant's recorder still
+# keeps. More is dropped, the state is kept.
+MAX_ATTRIBUTES_BYTES: Final = 16384
 
 STORAGE_KEY: Final = DOMAIN
 STORAGE_VERSION: Final = 1
