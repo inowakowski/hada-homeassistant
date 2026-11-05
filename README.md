@@ -73,16 +73,19 @@ data:
         title: Open
 ```
 
-A pressed button fires `hada_event` with `name: notification_action` and the button's `action` as `value`:
+A pressed button fires `hada_event` with `name: notification_action`, the button's `action` as `value`, and the computer's Device ID as `device_id`:
 
 ```yaml
 triggers:
   - trigger: event
     event_type: hada_event
     event_data:
+      device_id: laptop
       name: notification_action
       value: open_door
 ```
+
+Name the computer, as `device_id` does here, in every automation that starts from `hada_event`. Any user of Home Assistant may connect a computer of their own, and its events carry the same names and values; without `device_id`, theirs would open the door too. A computer can fire events only under its own Device ID.
 
 What `data` may carry is described in [HADA's documentation](https://github.com/inowakowski/home-assistant-desktop-app/blob/main/docs/features/notifications.md).
 
