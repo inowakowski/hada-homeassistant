@@ -6,6 +6,7 @@ import asyncio
 from collections.abc import Callable
 from dataclasses import dataclass, field
 import json
+import logging
 import secrets
 from typing import TYPE_CHECKING, Any
 
@@ -39,6 +40,28 @@ if TYPE_CHECKING:
     from .entity import HadaEntity
 
 type HadaConfigEntry = ConfigEntry[HadaData]
+
+_LOGGER = logging.getLogger(__name__)
+
+# Attributes Home Assistant sets itself from what an entity is, or shows as the entity's own, such as its
+# picture. Those of an entity that does not set them would otherwise be the computer's to choose: a picture
+# from an address of its choice, which every dashboard showing the entity would then fetch.
+RESERVED_ATTRIBUTES: frozenset[str] = frozenset(
+    {
+        "assumed_state",
+        "attribution",
+        "device_class",
+        "editable",
+        "entity_id",
+        "entity_picture",
+        "friendly_name",
+        "icon",
+        "restored",
+        "state_class",
+        "supported_features",
+        "unit_of_measurement",
+    }
+)
 
 # The kinds of entity this version makes, by the platform that makes them.
 KINDS: tuple[str, ...] = (
@@ -320,7 +343,9 @@ class HadaData:
             descriptor = {key: item[key] for key in DESCRIPTOR_KEYS if key in item}
             device.descriptors[entity_id] = descriptor
             device.states[entity_id] = EntityState(
-                item.get("state"), item.get("attributes") or {}, item.get("available", True)
+                item.get("state"),
+                kept_attributes(device, entity_id, item.get("attributes")),
+                item.get("available", True),
             )
             if (entity := device.entities.get(entity_id)) is not None:
                 entity.set_descriptor(descriptor)
@@ -341,6 +366,30 @@ class HadaData:
         """Called when the device was deleted in Home Assistant, which removed its entities."""
         if self.devices.pop(device_id, None) is not None:
             self.async_schedule_save()
+
+
+def kept_attributes(
+    device: HadaDevice, entity_id: str, attributes: dict[str, Any] | None
+) -> dict[str, Any]:
+    """The attributes a computer reported, as they are kept: without those Home Assistant sets itself.
+
+    Attributes larger than Home Assistant's recorder keeps are left out altogether, and the state kept.
+    """
+    if not attributes:
+        return {}
+
+    kept = {key: value for key, value in attributes.items() if key not in RESERVED_ATTRIBUTES}
+    size = len(json.dumps(kept, ensure_ascii=False, default=str).encode())
+    if size > const.MAX_ATTRIBUTES_BYTES:
+        _LOGGER.warning(
+            "The attributes %s of %s reported are %s bytes, more than %s; they are left out",
+            entity_id,
+            device.name,
+            size,
+            const.MAX_ATTRIBUTES_BYTES,
+        )
+        return {}
+    return kept
 
 
 def unique_id(device_id: str, entity_id: str) -> str:

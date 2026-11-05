@@ -25,7 +25,7 @@ from .const import (
     MIN_PROTOCOL_VERSION,
     PROTOCOL_VERSION,
 )
-from .device import HadaData, HadaDevice
+from .device import HadaData, HadaDevice, kept_attributes
 
 ID = vol.All(str, vol.Match(r"^[a-z0-9_]{1,64}$"))
 NAME = vol.All(str, vol.Length(min=1, max=255))
@@ -181,6 +181,16 @@ def handle_connect(
             )
             return
 
+        if not connection.user.is_admin and sum(
+            1 for known in data.devices.values() if known.owner_user_id == connection.user.id
+        ) >= const.MAX_DEVICES_PER_USER:
+            connection.send_error(
+                msg["id"],
+                ERR_TOO_MANY_DEVICES,
+                f"This user has {const.MAX_DEVICES_PER_USER} computers already; an administrator may delete one that is no longer used",
+            )
+            return
+
         device = data.devices[device_id] = HadaDevice(
             device_id, info["name"], connection.user.id
         )
@@ -256,7 +266,7 @@ def handle_update(
         if "state" in update:
             state.state = update["state"]
         if "attributes" in update:
-            state.attributes = update["attributes"] or {}
+            state.attributes = kept_attributes(device, update["id"], update["attributes"])
         if "available" in update:
             state.available = update["available"]
         if (entity := device.entities.get(update["id"])) is not None:

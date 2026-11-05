@@ -70,7 +70,7 @@ A second `hada/connect` for the same device, from this or another connection, ta
 | `not_found` | The integration is installed, but not set up (no *HADA* entry under **Devices & services**) |
 | `unsupported_protocol` | HADA's `protocol` is older than the oldest the integration still speaks |
 | `unauthorized` | The device id belongs to another Home Assistant user, see [Who may speak for a device](#who-may-speak-for-a-device) |
-| `too_many_devices` | The device is new, and there are 250 computers already; one that is known connects all the same |
+| `too_many_devices` | The device is new, and there are 250 computers already, or the user, unless an administrator, has 20 already; one that is known connects all the same |
 | `invalid_format` | The message does not have the shape described here |
 
 ## Entities
@@ -104,7 +104,7 @@ HADA is the source of truth about which entities a device has. The list in `hada
 | `features` | For `media_player`: what it can be told, a list of the `action`s under [Commands](#commands-for-the-computer). One the integration does not know is left out |
 | `enabled_by_default` | Optional, default `true`. `false` for entities that should start disabled in Home Assistant |
 | `state` | Optional: the current state, see below |
-| `attributes` | Optional: extra state attributes |
+| `attributes` | Optional: extra state attributes. Those Home Assistant sets itself are left out: `entity_picture`, `friendly_name`, `icon`, `unit_of_measurement`, `device_class`, `state_class`, `supported_features`, `assumed_state`, `attribution`, `restored`, `editable`, `entity_id`. Attributes of more than 16 KiB as JSON, the most Home Assistant's recorder keeps, are left out altogether, and the state kept |
 | `available` | Optional, default `true`. `false` while the source of this one entity is away |
 
 Fields the integration does not know are ignored, so newer versions of HADA may send more.
@@ -180,7 +180,7 @@ The state of a switch or a number is never assumed: it changes in Home Assistant
 
 `notify.send_message` sends `message` and `title`. The action `hada.notify`, aimed at the same entity, also takes `data`: `image`, `actions`, `tag`, `url`, `sticky`, `silent`, as HADA's documentation describes them.
 
-A picture in a notification that is a path at this Home Assistant, other than one under `/local/`, is signed by the integration before the command is sent: `data.image` then carries `authSig`, which makes it good for a minute without an access token. The computer fetches it from the Home Assistant it is connected to.
+A picture in a notification that is a path at this Home Assistant, other than one under `/local/`, is signed by the integration before the command is sent: `data.image` then carries `authSig`, which makes it good for a minute without an access token. It is signed as Home Assistant's own content user, which may only read, whoever sent the notification. The computer fetches it from the Home Assistant it is connected to.
 
 ## Events from the computer
 
@@ -201,6 +201,8 @@ A picture in a notification that is a path at this Home Assistant, other than on
 
 The first `hada/connect` for a device id makes the Home Assistant user whose token was used its owner. Later connections under that id are accepted from that user and from administrators; anyone else gets `unauthorized`. A device is given up by deleting it in Home Assistant, which is possible while it is not connected.
 
+A user who is not an administrator owns at most 20 devices, so that one user's token can neither fill Home Assistant with computers nor take every device id another computer is likely to use.
+
 No command needs an administrator's token.
 
 ## Versions
@@ -218,3 +220,4 @@ No command needs an administrator's token.
 | Availability, removing entities that are gone, owner of a device | 0.1.0 |
 | `button`, `switch`, `number`, the commands `press` and `set`, `hada/command_result` | 0.2.0 |
 | `notify`, the command `notify`, the action `hada.notify`; `event`, `hada/event` | 0.3.0 |
+| A limit of 20 devices for a user who is not an administrator; attributes Home Assistant sets itself left out, and attributes over 16 KiB; pictures signed as the content user | 0.4.1 |

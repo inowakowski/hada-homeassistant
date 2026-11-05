@@ -1,11 +1,13 @@
 """Notifications sent to a computer, and what the computer says happened on it."""
 
 from typing import Any
+from unittest.mock import patch
 
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry, async_capture_events
 from pytest_homeassistant_custom_component.typing import WebSocketGenerator
 
+from homeassistant.components.http.auth import async_sign_path
 from homeassistant.const import STATE_UNKNOWN
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
@@ -69,6 +71,21 @@ async def test_hada_notify_carries_all_a_notification_may(
 
     # Good without an access token, for a while; still a path at this Home Assistant.
     assert command["data"]["image"].startswith("/api/camera_proxy/camera.front_door?authSig=")
+
+
+async def test_a_picture_is_signed_as_the_content_user_whoever_sends_it(
+    hass: HomeAssistant, entry: MockConfigEntry, hass_ws_client: WebSocketGenerator
+) -> None:
+    """Signed as the administrator who sent it, the address would open that path to the computer as them."""
+    client = await connect(hass, hass_ws_client, NOTIFICATION)
+
+    with patch("custom_components.hada.notify.async_sign_path", wraps=async_sign_path) as sign:
+        command = await send(
+            hass, client, 2, ("hada", "notify"), {"message": "Hello", "data": {"image": "/api/camera_proxy/camera.front_door"}}
+        )
+
+    assert sign.call_args.kwargs.get("use_content_user") is True
+    assert "authSig=" in command["data"]["image"]
 
 
 @pytest.mark.parametrize("image", ["/local/door.jpg", "https://example.com/door.jpg", "//example.com/door.jpg"])

@@ -63,6 +63,10 @@ class HadaNotify(HadaEntity, NotifyEntity):
 
         A camera's picture, say, is only given to who is signed in; the computer fetches the picture
         as nobody. Signed, the address is good for a minute. What is public anyway is left alone.
+
+        It is signed as Home Assistant's own content user, which may only read, whoever sent the
+        notification: signed as an administrator who sent it from the frontend, the address would open
+        that path to the computer as the administrator.
         """
         image = data.get("image")
         if (
@@ -74,9 +78,9 @@ class HadaNotify(HadaEntity, NotifyEntity):
 
         try:
             signed = async_sign_path(
-                self.hass, image, timedelta(seconds=SIGNED_PATH_SECONDS)
+                self.hass, image, timedelta(seconds=SIGNED_PATH_SECONDS), use_content_user=True
             )
         except KeyError:
-            # No user to sign as, which happens while Home Assistant is still being set up for the first time.
+            # No content user to sign as, which happens while Home Assistant is still being set up for the first time.
             return data
         return {**data, "image": signed}
