@@ -1,6 +1,7 @@
 {
   "domain": "hada",
   "name": "HADA",
+  "categories": ["computers_network.monitoring"],
   "codeowners": ["@inowakowski"],
   "config_flow": true,
   "dependencies": ["websocket_api"],
