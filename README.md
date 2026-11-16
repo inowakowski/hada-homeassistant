@@ -36,7 +36,11 @@ By hand, the same two steps:
 1. Go to **Settings → Marketplace**, search for **HADA**, open it and choose **Install**.
 2. If its setup does not open, go to **Settings → Devices & services → Add integration**, choose **HADA** and confirm.
 
+Before the first installation from the Marketplace, Home Assistant asks once that you accept a warning.
+
 **Add from link** is not needed and does not work for HADA: it is for repositories the catalog does not list, and the Marketplace turns down one that it already has.
+
+If you added HADA to HACS as a custom repository before, there is nothing to do: Home Assistant 2026.11 moves it to the Marketplace with everything else HACS installed, and treats it as listed from then on.
 
 Before Home Assistant 2026.11, with [HACS](https://hacs.xyz): HADA is in HACS's default list too. Find **HADA** in HACS (or open it with [this link](https://my.home-assistant.io/redirect/hacs_repository/?owner=inowakowski&repository=hada-homeassistant&category=integration)), choose **Download**, restart Home Assistant, and add the integration as in step 2.
 
@@ -46,7 +50,7 @@ Without the Marketplace or HACS: copy `custom_components/hada` into the `custom_
 
 When a new version is out, **HADA** shows under **Settings → Updates** (**Settings → System → Updates** before 2026.11), with what changed. Install it there and restart Home Assistant; a repair under **Settings → System → Repairs** reminds you and can restart it for you.
 
-- The Marketplace, and HACS before it, look for new versions in the catalog every 6 hours.
+- The Marketplace, and HACS before it, look for new versions in the catalog every 6 hours. The catalog itself is refreshed every 4, so a new version can take some hours to show.
 - An installation made from the `main` branch, before there were versions, follows that branch instead. Install a version once, and updates follow the versions from then on: in the Marketplace, **Install another version** in the menu of HADA's page; in HACS, **Redownload**.
 - HADA on the computer also says so, on its Overview page, when the integration here is older than it needs.
 
