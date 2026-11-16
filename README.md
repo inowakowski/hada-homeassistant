@@ -19,31 +19,34 @@ It needs no broker and opens no port on the computer: HADA connects to Home Assi
 
 ## Installing
 
-With [HACS](https://hacs.xyz), in two clicks:
+HADA is in the Marketplace of Home Assistant 2026.11 and newer, so there is no repository to add by hand. In two clicks:
 
-1. Open this repository in the HACS of your Home Assistant, choose **Download**, and restart Home Assistant.
+1. Open HADA in the Marketplace of your Home Assistant and choose **Install**, then **Install** again to confirm the version.
 
-   [![Open your Home Assistant instance and open this repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=inowakowski&repository=hada-homeassistant&category=integration)
+   [![Open your Home Assistant instance and open this repository in the Marketplace.](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=inowakowski&repository=hada-homeassistant&category=integration)
 
-2. Add the integration and confirm. There is nothing to enter.
+2. Home Assistant goes on to set the integration up at once, without a restart. Confirm; there is nothing to enter.
 
-   [![Open your Home Assistant instance and start setting up the HADA integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=hada)
+The button asks for the address of your Home Assistant the first time it is used, and remembers it in the browser.
 
-The buttons ask for the address of your Home Assistant the first time they are used, and remember it in the browser.
+By hand: go to **Settings → Marketplace**, search for **HADA**, open it and choose **Install**. Before the first installation from the Marketplace, Home Assistant asks once that you accept a warning.
 
-By hand, the same two steps:
+- Do not use **Add from link** for HADA: the Marketplace turns down a repository it already lists. Search for it instead.
+- If you closed the setup, add the integration later under **Settings → Devices & services → Add integration**, choose **HADA** and confirm.
 
-1. In HACS, open the menu, choose **Custom repositories**, and add `https://github.com/inowakowski/hada-homeassistant` with the type **Integration**. Find **HADA** in HACS, download it, and restart Home Assistant.
-2. Go to **Settings → Devices & services → Add integration**, choose **HADA** and confirm.
+  [![Open your Home Assistant instance and start setting up the HADA integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=hada)
 
-Without HACS: copy `custom_components/hada` into the `custom_components` folder of your Home Assistant configuration, restart, and continue with step 2.
+- If you added HADA to HACS as a custom repository before, there is nothing to do: Home Assistant 2026.11 moves it to the Marketplace with everything else HACS installed, and treats it as listed from then on.
+
+**Home Assistant older than 2026.11:** install it with [HACS](https://hacs.xyz), where HADA is in the default list too. Search for **HADA** in HACS ([or open it there](https://my.home-assistant.io/redirect/hacs_repository/?owner=inowakowski&repository=hada-homeassistant&category=integration)), choose **Download**, restart Home Assistant, and add the integration as above.
+
+Without either: copy `custom_components/hada` into the `custom_components` folder of your Home Assistant configuration, restart, and add the integration as above.
 
 ## Updating
 
-HACS tells you when a new version is out: **HADA** then shows under **Settings → System → Updates** in Home Assistant, and in HACS itself, with what changed. Download it there and restart Home Assistant.
+When a new version is out, **HADA** shows under **Settings → Updates**, next to Home Assistant's own updates, with what changed. Install it there and restart Home Assistant; a repair reminds you and can restart it for you.
 
-- HACS looks for new versions of a repository added by hand when Home Assistant starts, and every two days after that. To look right now, open **HADA** in HACS and choose **Update information** from the menu.
-- An installation made from the `main` branch, before there were versions, follows that branch instead. Choose **Redownload** once and pick a version, and HACS follows the versions from then on.
+- The Marketplace looks for new versions every 6 hours, and the catalog it reads is refreshed every 4, so a new version can take some hours to show. HACS, on an older Home Assistant, looks every 6 hours too.
 - HADA on the computer also says so, on its Overview page, when the integration here is older than it needs.
 
 ## Connecting a computer
